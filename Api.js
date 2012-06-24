@@ -3,7 +3,7 @@
 */
 
 var
-  ObjectId  = require('mongodb').ObjectId
+  ObjectId  = require('mongodb').ObjectID
 , sugar     = require('sugar')
 ;
 
