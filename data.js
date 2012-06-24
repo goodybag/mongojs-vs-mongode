@@ -3,7 +3,8 @@ var i = 12344;
 module.exports.getBusiness = function(){
   i++;
   return ({
-    name: "biz" + i
+  /*, _id: new ObjectId()
+  ,*/ name: "biz" + i
   , publicName: "biz" + i
   , legal: {
       street1: "test"

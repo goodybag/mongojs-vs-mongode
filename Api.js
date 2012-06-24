@@ -3,8 +3,7 @@
 */
 
 var
-  schemas   = require('../schemas')
-, ObjectId  = require('mongodb').ObjectId
+  ObjectId  = require('mongodb').ObjectId
 , sugar     = require('sugar')
 ;
 
@@ -67,7 +66,7 @@ Api.prototype = {
       callback = fields;
       fields = {};
     }
-    var query = this.collection.find({ _id: id }, fields);
+    var query = this.collection.find(options, fields);
     query = this.parseCursors(options, query);
     query.toArray(callback);
   }
@@ -109,7 +108,7 @@ Api.prototype = {
     flatten = function(obj, path){
       if (Object.isObject(obj)){
         (path && (path += ".")) || (path = "");
-        for (var key of obj) flatten(obj[key], path + key);
+        for (var key in obj) flatten(obj[key], path + key);
       }else if (Object.isArray(obj)){
         (path && (path += ".")) || (path = "");
         i = 0;
