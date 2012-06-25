@@ -38,7 +38,7 @@ var
         previousResults = [];
       }
       previousResults.push(tests);
-      fs.writeFile(path, JSON.stringify(previousResults), function(error){
+      fs.writeFile(path, JSON.stringify(previousResults, null, "  "), function(error){
         if (error) throw error;
         process.exit(0);
       });
@@ -90,8 +90,8 @@ var
     ;
      suiteJs.add('MongoJs Inserting', insert('js'));
      suiteDe.add('MongoDe Inserting', insert('de'));
-     suiteJs.add('MongoJs Getting 100 Docs', insert('js'));
-     suiteDe.add('MongoDe Getting 100 Docs', insert('de'));
+     suiteJs.add('MongoJs Getting 100 Docs', getSome('js'));
+     suiteDe.add('MongoDe Getting 100 Docs', getSome('de'));
 
     one('js', function(fn){
       suiteJs.add('MongoJs Get One Record', fn);
