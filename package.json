@@ -9,6 +9,12 @@
   "engines": {
     "node": "~0.6.15"
   },
-  "dependencies": {},
+  "dependencies": {
+    "benchmark": "0.3.0",
+    "mongodb": "1.0.2",
+    "mongode": "0.1.4",
+    "mongojs": "0.4.3",
+    "sugar": "1.2.5"
+  },
   "devDependencies": {}
 }
