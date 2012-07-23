@@ -78,7 +78,7 @@ Api.prototype = {
    * @return {null}
    */
 , add: function(data, callback){
-    this.collection.insert(data, callback || function(){});
+    this.collection.insert(data, {safe: true},  callback || function(){});
   }
 
   /**
