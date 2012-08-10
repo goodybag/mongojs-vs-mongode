@@ -13,10 +13,12 @@ var
 , password          = "g00d"
 , connectionString  = 'mongodb://' + username + ':' + password + '@w-mongos0.objectrocket.com:10000/testme'
 , dbjs              = mongojs.connect(connectionString)
-, dbde              = mongode.connect(connectionString)
+, dbde              = mongode.connect(connectionString, { poolSize: 10 })
 , suiteJs           = new Benchmark.Suite
 , suiteDe           = new Benchmark.Suite
 , count             = 0
+, numInsertsToDo    = 100000
+, numInsertsDone    = 0
 , api = {
     js: {
       businesses: new Api(dbjs, 'businesses')
@@ -48,10 +50,12 @@ var
   }
 , insert = function(which){
     return function(deferred){
+      var self = this;
       count++;
       api[which].businesses.add(data.getBusiness(), function(error){
         error && console.log(error);
-        deferred.resolve();
+        if (++numInsertsDone >= numInsertsToDo) self.abort();
+       // deferred.resolve();
       });
     };
   }
@@ -62,7 +66,7 @@ var
       cb(function(deferred){
         api[which].businesses.one(b._id, function(error, business){
           error && console.log(error);
-          deferred.resolve();
+         // deferred.resolve();
         });
       });
     });
@@ -71,15 +75,28 @@ var
     return function(deferred){
       api[which].businesses.get({ limit: 100, skip: 20 }, function(error, business){
         error && console.log(error);
-        deferred.resolve();
+       // deferred.resolve();
       });
     };
   }
+, insertAmount = function(which){
+    return function(deferred){
+      var cb = function(error){
+        error && console.log(error);
+        if (deferred) deferred.resolve();
+      }
+      for (var i = 0; i < numInsertsToDo; i++){
+       api[which].businesses.add(data.getBusiness(), cb);
+      }
+    }
+  }
 , getOptions = function(fn){
     return {
-      defer: true
-    // , async: true
-    , maxTime: 30
+      defer: false
+    , async: false
+    , delay: 0
+    , maxTime: 9999999
+    , maxSamples: 999999999
     , minSamples: 100
     , fn: fn
     };
@@ -101,16 +118,24 @@ var
     ;
      suiteJs.add('MongoJs Inserting', getOptions(insert('js')));
      suiteDe.add('MongoDe Inserting', getOptions(insert('de')));
-     suiteJs.add('MongoJs Getting 100 Docs', getOptions(getSome('js')));
-     suiteDe.add('MongoDe Getting 100 Docs', getOptions(getSome('de')));
+     var insertAmountOptions = getOptions();
+     insertAmountOptions.minSamples = 1;
+     insertAmountOptions.maxSamples = 1;
+     insertAmountOptions.maxTime = -1;
+     insertAmountOptions.fn = insertAmount('js');
+    // suiteJs.add('MongoJs Inserting ' + numInsertsToDo + ' docs', insertAmountOptions);
+     insertAmountOptions.fn = insertAmount('de');
+    // suiteDe.add('MongoDe Inserting ' + numInsertsToDo + ' docs', insertAmountOptions);
+    // suiteJs.add('MongoJs Getting 100 Docs', getOptions(getSome('js')));
+    // suiteDe.add('MongoDe Getting 100 Docs', getOptions(getSome('de')));
 
     one('js', function(fn){
-      suiteJs.add('MongoJs Get One Record', getOptions(fn));
+     // suiteJs.add('MongoJs Get One Record', getOptions(fn));
       if (setupReady('js')) cb();
     });
 
     one('de', function(fn){
-      suiteDe.add('MongoDe Get One Record', getOptions(fn));
+     // suiteDe.add('MongoDe Get One Record', getOptions(fn));
       if (setupReady('de')) cb();
     });
 
@@ -123,8 +148,8 @@ var
 setup(function(){
   console.log("Testing mongo" + whichOne);
   if (whichOne == "de"){
-    suiteDe.run();
+    suiteDe.run({ async: true });
   }else{
-    suiteJs.run();
+    suiteJs.run({ async: true });
   }
 });
